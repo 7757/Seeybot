@@ -97,10 +97,10 @@ Token totals are parsed once and **cached per file** (size + mtime), so each tic
 - [x] Non-notch Macs (flat bar)
 - [x] Update checks
 - [x] Homebrew cask
+- [ ] 🔔 **Desktop popup when a session finishes — _next up_.** Agents rarely tell you the moment a long task is done; Seeybot will pop a notification the second a session goes from *working* to idle.
 - [ ] 🔌 More AI CLIs — Cursor, Aider, Gemini CLI, Cline, opencode…
 - [ ] ⚙️ Configurable refresh interval & "working" window
 - [ ] 💵 Cost estimation (tokens → $ per model)
-- [ ] 🔔 Notifications (a session finished / went idle)
 - [ ] 📈 History & trends
 - [ ] 🧭 In-app auto-update
 
