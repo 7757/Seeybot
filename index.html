@@ -70,6 +70,16 @@
   .cmd{display:inline-flex; align-items:center; gap:12px; font-family:ui-monospace,Menlo,monospace; font-size:13px; padding:11px 16px; border-radius:11px; background:rgba(255,255,255,.04); border:1px solid var(--line); color:var(--ink); cursor:pointer}
   .cmd .copy{color:var(--faint); font-size:11.5px; font-family:Inter}
   .cmd:hover{border-color:rgba(255,255,255,.18)}
+  .stats{display:inline-flex; align-items:center; gap:14px; margin-top:28px; padding:6px 16px 6px 6px; border:1px solid var(--line); border-radius:999px; background:rgba(255,255,255,.02)}
+  .seg{display:inline-flex; background:rgba(255,255,255,.04); border-radius:999px; padding:3px}
+  .seg button{border:none; background:none; color:var(--faint); font-family:inherit; font-size:12.5px; padding:5px 13px; border-radius:999px; cursor:pointer; transition:.2s}
+  .seg button.on{background:rgba(255,255,255,.1); color:var(--ink)}
+  .stats .stat{display:inline-flex; align-items:center; gap:6px; font-size:13.5px; color:var(--muted)}
+  .stats .stat svg{width:14px; height:14px; opacity:.55}
+  .stats .stat b{color:var(--ink); font-weight:600; font-variant-numeric:tabular-nums}
+  .stats .stat span{color:var(--faint)}
+  .dot-sep{width:3px; height:3px; border-radius:50%; background:var(--faint); opacity:.5}
+  @media(max-width:520px){.stats{gap:9px; padding:6px 12px 6px 6px} .stats .stat span{display:none}}
 
   .stage{position:relative; margin:74px auto 0; max-width:980px; padding:0 12px}
   .device{position:relative; border-radius:18px; overflow:hidden; border:1px solid var(--line);
@@ -171,6 +181,15 @@
     <div class="hero-cta reveal">
       <button class="cmd" data-copy="brew install --cask 7757/seeybot/seeybot">brew install --cask 7757/seeybot/seeybot <span class="copy">复制</span></button>
       <a class="btn btn-ghost" href="https://github.com/7757/Seeybot" target="_blank" rel="noopener">在 GitHub 点星</a>
+    </div>
+    <div class="stats reveal" title="数据来自 GoatCounter">
+      <div class="seg">
+        <button class="on" data-range="total">总计</button>
+        <button data-range="today">今日</button>
+      </div>
+      <div class="stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="2.5"/></svg><b id="s-views">—</b><span>浏览</span></div>
+      <span class="dot-sep"></span>
+      <div class="stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 20c.7-3.5 3.3-5.2 6.5-5.2s5.8 1.7 6.5 5.2"/></svg><b id="s-visitors">—</b><span>访客</span></div>
     </div>
   </div>
   <div class="stage reveal">
@@ -291,11 +310,23 @@
   document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',async()=>{
     try{await navigator.clipboard.writeText(b.dataset.copy); const s=b.querySelector('.copy'); if(s){const t=s.textContent; s.textContent='已复制'; setTimeout(()=>s.textContent=t,1400)}}catch(e){}
   }));
-  // live visitor count from GoatCounter
-  fetch('https://seeybot.goatcounter.com/counter/TOTAL.json')
-    .then(r=>r.ok?r.json():Promise.reject())
-    .then(d=>{const el=document.getElementById('gc-count'); if(el) el.textContent=(d.count_unique||d.count||'—').toString();})
-    .catch(()=>{});
+  // live visitor stats from GoatCounter (pageviews + unique, today / total)
+  const GC='https://seeybot.goatcounter.com/counter/TOTAL.json';
+  const p2=n=>String(n).padStart(2,'0'); const now=new Date();
+  const TODAY=now.getFullYear()+'-'+p2(now.getMonth()+1)+'-'+p2(now.getDate());
+  function gcLoad(range){
+    const url = range==='today' ? GC+'?start='+TODAY : GC;
+    fetch(url).then(r=>r.ok?r.json():Promise.reject()).then(d=>{
+      const v=document.getElementById('s-views'), u=document.getElementById('s-visitors');
+      if(v) v.textContent=d.count; if(u) u.textContent=d.count_unique;
+      if(range!=='today'){const f=document.getElementById('gc-count'); if(f) f.textContent=d.count_unique;}
+    }).catch(()=>{});
+  }
+  document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x===b));
+    gcLoad(b.dataset.range);
+  }));
+  gcLoad('total');
 </script>
 <script data-goatcounter="https://seeybot.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
